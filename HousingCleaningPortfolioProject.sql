@@ -1,7 +1,7 @@
 SELECT * 
 FROM PortfolioProject2..NashvilleHousing
 
--- Standardising Sale Date Format
+-- Standardising Sale Date Format - Converting the SaleDate into the Date format for easier use
 
 SELECT SaleDateConverted, CONVERT(Date,SaleDate)
 FROM PortfolioProject2..NashvilleHousing
@@ -9,7 +9,7 @@ FROM PortfolioProject2..NashvilleHousing
 UPDATE NashvilleHousing
 SET SaleDate = CONVERT(Date,SaleDate)
 
--- OR
+-- Or I can Update the table
 
 ALTER TABLE NashvilleHousing
 ADD SaleDateConverted Date;
@@ -17,11 +17,12 @@ ADD SaleDateConverted Date;
 UPDATE NashvilleHousing
 SET SaleDateConverted = CONVERT(Date,SaleDate)
 
--- Populating Property Addresses
+-- Populating Property Addresses - With a lot of null values in the address column I can
+-- populate the address using a row with the same information in it
 
 SELECT *
 FROM PortfolioProject2..NashvilleHousing
---WHERE PropertyAddress IS NULL
+WHERE PropertyAddress IS NULL
 ORDER BY ParcelID
 
 SELECT a.ParcelID, a.PropertyAddress, b.ParcelID,
@@ -32,7 +33,8 @@ JOIN PortfolioProject2..NashvilleHousing b
 	AND a.[UniqueID ] <> b.[UniqueID ]
 
 
---Populate With Correct Address
+--Populating With Correct Address
+
 UPDATE a
 SET PropertyAddress = ISNULL(a.PropertyAddress,b.PropertyAddress)
 FROM PortfolioProject2..NashvilleHousing a
@@ -40,7 +42,7 @@ JOIN PortfolioProject2..NashvilleHousing b
 	ON a.ParcelID = b.ParcelID
 	AND a.[UniqueID ] <> b.[UniqueID ]
 
---Populate as No Address
+-- Or I can populate as 'No Address'
 UPDATE a
 SET PropertyAddress = ISNULL(a.PropertyAddress,'No Address')
 FROM PortfolioProject2..NashvilleHousing a
@@ -48,7 +50,7 @@ JOIN PortfolioProject2..NashvilleHousing b
 	ON a.ParcelID = b.ParcelID
 	AND a.[UniqueID ] <> b.[UniqueID ]
 
---- Breaking Out Address Using a Substring
+--- Since the address is all in one value I can break out the addess  into city and address using a substring
 
 SELECT PropertyAddress
 FROM NashvilleHousing
@@ -70,7 +72,7 @@ ADD PropertySplitCity nvarchar(255);
 UPDATE NashvilleHousing
 SET PropertySplitCity = SUBSTRING(PropertyAddress, CHARINDEX(',',PropertyAddress)+1,LEN(PropertyAddress))
 
---- Breaking Out Address using Parsename
+--- An easier way to do this is by  breaking out the address using Parsename
 
 SELECT OwnerAddress
 FROM NashvilleHousing
@@ -99,7 +101,7 @@ ADD OwnerSplitState nvarchar(255)
 UPDATE NashvilleHousing
 SET OwnerSplitState = PARSENAME(REPLACE(OwnerAddress, ',', '.'),1)
 
---- Chaning Y and N to Yes and No in SoldAsVacant
+--- Changing Y and N to Yes and No in SoldAsVacant
 
 SELECT DISTINCT SoldAsVacant, Count(SoldAsVacant)
 FROM NashvilleHousing
@@ -119,7 +121,7 @@ SET SoldAsVacant = 	CASE WHEN SoldAsVacant = 'Y' THEN 'Yes'
 		 ELSE SoldAsVacant
 END
 
---- Removing Duplicates
+--- Removing Duplicates in the table
 
 WITH RowNumCTE AS
 (
